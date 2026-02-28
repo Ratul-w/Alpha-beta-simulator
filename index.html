@@ -1,0 +1,1675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IMPOSTER HELPERS — AI Game Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #060810;
+  --bg2: #0d1117;
+  --bg3: #141920;
+  --panel: #0f1623;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.12);
+  --accent: #00e5ff;
+  --accent2: #ff3d71;
+  --accent3: #a855f7;
+  --gold: #ffd60a;
+  --green: #00ff88;
+  --text: #e2e8f0;
+  --muted: #5a6a7a;
+  --font: 'Syne', sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--font);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* GRID BACKGROUND */
+body::before{
+  content:'';
+  position:fixed;
+  inset:0;
+  background-image:
+    linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+  background-size:50px 50px;
+  pointer-events:none;
+  z-index:0;
+}
+
+/* GLOW ORBS */
+.orb{
+  position:fixed;
+  border-radius:50%;
+  filter:blur(120px);
+  pointer-events:none;
+  z-index:0;
+}
+.orb1{width:500px;height:500px;background:rgba(0,229,255,0.06);top:-200px;right:-100px;}
+.orb2{width:400px;height:400px;background:rgba(168,85,247,0.07);bottom:-100px;left:-150px;}
+.orb3{width:300px;height:300px;background:rgba(255,61,113,0.05);top:50%;left:50%;transform:translate(-50%,-50%);}
+
+/* HEADER */
+header{
+  position:relative;
+  z-index:10;
+  padding:40px 40px 0;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  flex-wrap:wrap;
+  gap:20px;
+}
+.logo{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.logo-icon{
+  width:44px;height:44px;
+  background:linear-gradient(135deg,var(--accent),var(--accent3));
+  border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;
+  box-shadow:0 0 30px rgba(0,229,255,0.4);
+}
+.logo-text{
+  font-size:22px;
+  font-weight:800;
+  letter-spacing:-0.5px;
+}
+.logo-text span{color:var(--accent);}
+.badge{
+  font-family:var(--mono);
+  font-size:11px;
+  background:rgba(0,229,255,0.1);
+  border:1px solid rgba(0,229,255,0.3);
+  color:var(--accent);
+  padding:6px 14px;
+  border-radius:20px;
+  letter-spacing:2px;
+  text-transform:uppercase;
+}
+
+/* NAV TABS */
+.nav{
+  position:relative;
+  z-index:10;
+  display:flex;
+  gap:4px;
+  padding:30px 40px 0;
+  border-bottom:1px solid var(--border);
+}
+.nav-tab{
+  padding:12px 24px;
+  background:none;
+  border:none;
+  color:var(--muted);
+  font-family:var(--font);
+  font-size:14px;
+  font-weight:600;
+  letter-spacing:0.5px;
+  cursor:pointer;
+  border-radius:8px 8px 0 0;
+  transition:all 0.2s;
+  border-bottom:2px solid transparent;
+  position:relative;
+  bottom:-1px;
+}
+.nav-tab:hover{color:var(--text);}
+.nav-tab.active{
+  color:var(--accent);
+  border-bottom-color:var(--accent);
+  background:rgba(0,229,255,0.05);
+}
+
+/* MAIN CONTENT */
+.main{
+  position:relative;
+  z-index:10;
+  padding:40px;
+}
+.page{display:none;}
+.page.active{display:block;animation:fadeSlide 0.3s ease;}
+@keyframes fadeSlide{
+  from{opacity:0;transform:translateY(10px);}
+  to{opacity:1;transform:translateY(0);}
+}
+
+/* ========================
+   TIC-TAC-TOE PAGE
+======================== */
+.ttt-layout{
+  display:grid;
+  grid-template-columns:1fr 380px;
+  gap:30px;
+  max-width:1200px;
+  margin:0 auto;
+}
+
+/* GAME HEADER */
+.game-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:30px;
+  flex-wrap:wrap;
+  gap:15px;
+}
+.game-title{
+  font-size:32px;
+  font-weight:800;
+  letter-spacing:-1px;
+}
+.game-title .x{color:var(--accent);}
+.game-title .o{color:var(--accent2);}
+
+/* STATUS BAR */
+.status-bar{
+  background:var(--panel);
+  border:1px solid var(--border2);
+  border-radius:14px;
+  padding:16px 24px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-bottom:24px;
+  min-height:58px;
+}
+.status-dot{
+  width:10px;height:10px;
+  border-radius:50%;
+  background:var(--accent);
+  box-shadow:0 0 10px var(--accent);
+  flex-shrink:0;
+  animation:blink 1.5s infinite;
+}
+.status-dot.red{background:var(--accent2);box-shadow:0 0 10px var(--accent2);}
+.status-dot.gold{background:var(--gold);box-shadow:0 0 10px var(--gold);}
+.status-dot.green{background:var(--green);box-shadow:0 0 10px var(--green);}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0.3;}}
+.status-text{font-size:15px;font-weight:600;}
+.status-sub{font-size:13px;color:var(--muted);margin-top:2px;}
+
+/* BOARD */
+.board-wrap{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+.board{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+  width:100%;
+  max-width:420px;
+  margin-bottom:20px;
+}
+.cell{
+  aspect-ratio:1;
+  background:var(--panel);
+  border:1px solid var(--border2);
+  border-radius:16px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:52px;
+  font-weight:800;
+  cursor:pointer;
+  transition:all 0.2s;
+  position:relative;
+  overflow:hidden;
+  user-select:none;
+}
+.cell::after{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:radial-gradient(circle at center,rgba(255,255,255,0.05) 0%,transparent 70%);
+  opacity:0;
+  transition:opacity 0.2s;
+}
+.cell:hover:not(.taken)::after{opacity:1;}
+.cell:hover:not(.taken){
+  border-color:rgba(0,229,255,0.4);
+  transform:scale(1.03);
+  box-shadow:0 8px 30px rgba(0,0,0,0.4);
+}
+.cell.taken{cursor:default;}
+.cell .x-mark{
+  color:var(--accent);
+  text-shadow:0 0 20px rgba(0,229,255,0.6);
+  animation:popIn 0.2s cubic-bezier(0.34,1.56,0.64,1);
+}
+.cell .o-mark{
+  color:var(--accent2);
+  text-shadow:0 0 20px rgba(255,61,113,0.6);
+  animation:popIn 0.2s cubic-bezier(0.34,1.56,0.64,1);
+}
+.cell.winning{
+  background:rgba(255,214,10,0.1);
+  border-color:var(--gold);
+  box-shadow:0 0 30px rgba(255,214,10,0.3);
+  animation:winPulse 0.6s ease forwards;
+}
+.cell.winning .x-mark{color:var(--gold);text-shadow:0 0 20px var(--gold);}
+.cell.winning .o-mark{color:var(--gold);text-shadow:0 0 20px var(--gold);}
+@keyframes popIn{
+  from{transform:scale(0) rotate(-10deg);opacity:0;}
+  to{transform:scale(1) rotate(0deg);opacity:1;}
+}
+@keyframes winPulse{
+  0%{transform:scale(1);}
+  50%{transform:scale(1.05);}
+  100%{transform:scale(1);}
+}
+
+/* AI THINKING indicator on cell */
+.cell.ai-candidate{
+  border-color:rgba(168,85,247,0.5);
+  box-shadow:0 0 20px rgba(168,85,247,0.2);
+}
+
+/* CONTROLS */
+.controls{
+  display:flex;
+  gap:10px;
+  margin-top:10px;
+  flex-wrap:wrap;
+  justify-content:center;
+  width:100%;
+  max-width:420px;
+}
+.btn{
+  padding:11px 22px;
+  border:1px solid var(--border2);
+  border-radius:10px;
+  background:var(--panel);
+  color:var(--text);
+  font-family:var(--font);
+  font-size:13px;
+  font-weight:600;
+  cursor:pointer;
+  transition:all 0.2s;
+  letter-spacing:0.3px;
+  flex:1;
+  min-width:120px;
+}
+.btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(0,229,255,0.05);}
+.btn.primary{
+  background:linear-gradient(135deg,#0099bb,var(--accent));
+  border:none;
+  color:#000;
+  font-weight:700;
+  box-shadow:0 4px 20px rgba(0,229,255,0.3);
+}
+.btn.primary:hover{transform:translateY(-1px);box-shadow:0 6px 25px rgba(0,229,255,0.4);color:#000;}
+.btn.danger{border-color:rgba(255,61,113,0.3);color:var(--accent2);}
+.btn.danger:hover{background:rgba(255,61,113,0.1);border-color:var(--accent2);}
+
+/* MODE SELECT */
+.mode-select{
+  display:flex;
+  gap:8px;
+  margin-bottom:24px;
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:6px;
+}
+.mode-btn{
+  flex:1;
+  padding:10px;
+  border:none;
+  background:none;
+  color:var(--muted);
+  font-family:var(--font);
+  font-size:13px;
+  font-weight:600;
+  cursor:pointer;
+  border-radius:8px;
+  transition:all 0.2s;
+}
+.mode-btn.active{
+  background:rgba(0,229,255,0.15);
+  color:var(--accent);
+  box-shadow:0 0 15px rgba(0,229,255,0.1);
+}
+
+/* DIFFICULTY */
+.diff-row{
+  display:flex;
+  gap:6px;
+  margin-bottom:20px;
+}
+.diff-btn{
+  flex:1;
+  padding:8px;
+  border:1px solid var(--border);
+  background:var(--panel);
+  color:var(--muted);
+  font-family:var(--mono);
+  font-size:11px;
+  font-weight:700;
+  cursor:pointer;
+  border-radius:8px;
+  transition:all 0.2s;
+  text-transform:uppercase;
+  letter-spacing:1px;
+}
+.diff-btn.active.easy{border-color:var(--green);color:var(--green);background:rgba(0,255,136,0.08);}
+.diff-btn.active.medium{border-color:var(--gold);color:var(--gold);background:rgba(255,214,10,0.08);}
+.diff-btn.active.hard{border-color:var(--accent2);color:var(--accent2);background:rgba(255,61,113,0.08);}
+
+/* RIGHT PANEL - AI ANALYSIS */
+.ai-panel{
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+}
+.panel-card{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:20px;
+}
+.panel-label{
+  font-family:var(--mono);
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  color:var(--muted);
+  margin-bottom:14px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.panel-label::before{
+  content:'';
+  width:20px;height:1px;
+  background:var(--muted);
+}
+
+/* SCORE */
+.score-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:10px;
+}
+.score-item{
+  text-align:center;
+  padding:12px 8px;
+  background:rgba(255,255,255,0.03);
+  border-radius:10px;
+  border:1px solid var(--border);
+}
+.score-num{
+  font-size:26px;
+  font-weight:800;
+  font-family:var(--mono);
+  line-height:1;
+}
+.score-num.x-score{color:var(--accent);}
+.score-num.draw{color:var(--muted);}
+.score-num.o-score{color:var(--accent2);}
+.score-lbl{font-size:11px;color:var(--muted);margin-top:4px;font-weight:600;}
+
+/* AI THINKING STEPS */
+.thinking-steps{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  max-height:280px;
+  overflow-y:auto;
+}
+.thinking-steps::-webkit-scrollbar{width:4px;}
+.thinking-steps::-webkit-scrollbar-track{background:transparent;}
+.thinking-steps::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+.think-step{
+  padding:10px 14px;
+  border-radius:8px;
+  border-left:3px solid var(--border2);
+  background:rgba(255,255,255,0.02);
+  font-family:var(--mono);
+  font-size:12px;
+  color:var(--muted);
+  transition:all 0.3s;
+  animation:slideIn 0.2s ease;
+}
+.think-step.highlight{
+  border-left-color:var(--accent);
+  color:var(--text);
+  background:rgba(0,229,255,0.05);
+}
+.think-step.prune{
+  border-left-color:var(--accent2);
+  color:var(--accent2);
+  background:rgba(255,61,113,0.05);
+}
+.think-step.best{
+  border-left-color:var(--gold);
+  color:var(--gold);
+  background:rgba(255,214,10,0.05);
+  font-weight:700;
+}
+@keyframes slideIn{
+  from{opacity:0;transform:translateX(-5px);}
+  to{opacity:1;transform:translateX(0);}
+}
+
+/* BOARD HEATMAP */
+.heatmap-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:6px;
+}
+.heat-cell{
+  aspect-ratio:1;
+  border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);
+  font-size:12px;
+  font-weight:700;
+  transition:all 0.4s;
+  border:1px solid var(--border);
+}
+
+/* ========================
+   ALPHA-BETA PAGE
+======================== */
+.ab-layout{
+  max-width:1400px;
+  margin:0 auto;
+}
+.ab-controls{
+  display:grid;
+  grid-template-columns:300px 1fr;
+  gap:24px;
+  margin-bottom:30px;
+}
+.control-card{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:24px;
+}
+.control-title{
+  font-size:18px;
+  font-weight:800;
+  margin-bottom:20px;
+  color:var(--accent);
+}
+.inp-label{
+  font-size:12px;
+  font-weight:600;
+  letter-spacing:0.5px;
+  color:var(--muted);
+  margin-bottom:6px;
+  display:block;
+}
+.inp{
+  width:100%;
+  padding:10px 14px;
+  background:rgba(255,255,255,0.04);
+  border:1px solid var(--border2);
+  border-radius:8px;
+  color:var(--text);
+  font-family:var(--mono);
+  font-size:13px;
+  margin-bottom:14px;
+  transition:all 0.2s;
+}
+.inp:focus{outline:none;border-color:var(--accent);background:rgba(0,229,255,0.05);}
+textarea.inp{min-height:140px;resize:vertical;}
+
+/* PRESET PILLS */
+.preset-pills{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-bottom:16px;
+}
+.pill{
+  padding:5px 12px;
+  border-radius:20px;
+  border:1px solid var(--border2);
+  background:none;
+  color:var(--muted);
+  font-family:var(--mono);
+  font-size:11px;
+  cursor:pointer;
+  transition:all 0.2s;
+}
+.pill:hover,.pill.active{
+  border-color:var(--accent3);
+  color:var(--accent3);
+  background:rgba(168,85,247,0.1);
+}
+
+/* STATS ROW */
+.stats-row{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  gap:12px;
+  margin-bottom:24px;
+}
+.stat-box{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:16px;
+  text-align:center;
+}
+.stat-val{
+  font-size:28px;
+  font-weight:800;
+  font-family:var(--mono);
+  color:var(--accent);
+  line-height:1;
+}
+.stat-lbl{font-size:11px;color:var(--muted);margin-top:4px;font-weight:600;letter-spacing:0.5px;}
+
+/* TREE VIZ */
+.tree-section{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:24px;
+  overflow-x:auto;
+  margin-bottom:24px;
+}
+.tree-section-title{
+  font-size:16px;font-weight:700;
+  margin-bottom:20px;
+  color:var(--text);
+}
+.tree-canvas{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:0;
+  min-width:max-content;
+}
+.tree-row{
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+  gap:16px;
+  margin-bottom:0;
+}
+.tree-node{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+.node-box{
+  padding:10px 16px;
+  border-radius:10px;
+  border:2px solid;
+  min-width:80px;
+  text-align:center;
+  position:relative;
+  cursor:pointer;
+  transition:all 0.3s;
+  margin:4px;
+}
+.node-box:hover{transform:translateY(-3px);box-shadow:0 8px 25px rgba(0,0,0,0.4);}
+.node-box.max{border-color:var(--accent);background:rgba(0,229,255,0.08);}
+.node-box.min{border-color:var(--accent2);background:rgba(255,61,113,0.08);}
+.node-box.leaf{border-color:var(--muted);background:rgba(255,255,255,0.04);}
+.node-box.pruned{opacity:0.25;border-style:dashed;}
+.node-box.on-path{
+  border-color:var(--gold)!important;
+  background:rgba(255,214,10,0.12)!important;
+  box-shadow:0 0 20px rgba(255,214,10,0.3);
+  animation:goldPulse 2s infinite;
+}
+@keyframes goldPulse{
+  0%,100%{box-shadow:0 0 20px rgba(255,214,10,0.3);}
+  50%{box-shadow:0 0 30px rgba(255,214,10,0.5);}
+}
+.node-name{font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:2px;}
+.node-val{font-size:18px;font-weight:800;font-family:var(--mono);}
+.node-box.max .node-val{color:var(--accent);}
+.node-box.min .node-val{color:var(--accent2);}
+.node-box.leaf .node-val{color:var(--text);}
+.node-box.on-path .node-val{color:var(--gold);}
+.node-ab{font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:2px;}
+.connector-row{
+  display:flex;
+  justify-content:center;
+  gap:0;
+  height:24px;
+  position:relative;
+}
+
+/* STEPS */
+.steps-section{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:24px;
+}
+.steps-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:20px;
+}
+.steps-title{font-size:16px;font-weight:700;}
+.step-controls{display:flex;gap:8px;}
+.step-btn{
+  padding:7px 14px;
+  border:1px solid var(--border2);
+  border-radius:8px;
+  background:none;
+  color:var(--text);
+  font-family:var(--mono);
+  font-size:12px;
+  cursor:pointer;
+  transition:all 0.2s;
+}
+.step-btn:hover{border-color:var(--accent);color:var(--accent);}
+.step-btn:disabled{opacity:0.3;cursor:default;}
+.steps-list{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  max-height:400px;
+  overflow-y:auto;
+}
+.steps-list::-webkit-scrollbar{width:4px;}
+.steps-list::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+.ab-step{
+  padding:12px 16px;
+  border-radius:8px;
+  border-left:3px solid var(--border2);
+  background:rgba(255,255,255,0.02);
+  font-family:var(--mono);
+  font-size:12px;
+  color:var(--muted);
+  transition:all 0.3s;
+}
+.ab-step.visit{border-left-color:var(--accent);color:var(--text);background:rgba(0,229,255,0.04);}
+.ab-step.leaf{border-left-color:var(--green);color:var(--green);}
+.ab-step.prune{border-left-color:var(--accent2);color:var(--accent2);background:rgba(255,61,113,0.05);font-weight:700;}
+.ab-step.update{border-left-color:var(--accent3);}
+.ab-step.active-step{
+  border-left-color:var(--gold);
+  background:rgba(255,214,10,0.08);
+  color:var(--gold);
+}
+
+/* Legend */
+.legend{
+  display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px;
+}
+.leg{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);}
+.leg-dot{width:10px;height:10px;border-radius:3px;border:2px solid;}
+.leg-dot.max{border-color:var(--accent);background:rgba(0,229,255,0.2);}
+.leg-dot.min{border-color:var(--accent2);background:rgba(255,61,113,0.2);}
+.leg-dot.path{border-color:var(--gold);background:rgba(255,214,10,0.2);}
+.leg-dot.pruned{border-color:var(--muted);border-style:dashed;opacity:0.5;}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .ttt-layout{grid-template-columns:1fr;}
+  .ab-controls{grid-template-columns:1fr;}
+  header{padding:24px 20px 0;}
+  .nav{padding:20px 20px 0;}
+  .main{padding:20px;}
+}
+</style>
+</head>
+<body>
+
+<!-- Background orbs -->
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+<div class="orb orb3"></div>
+
+<!-- Header -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">⚡</div>
+    <div class="logo-text">IMPOSTER<span> HELPERS</span></div>
+  </div>
+  <div class="badge">AI GAME LAB</div>
+</header>
+
+<!-- Nav -->
+<nav class="nav">
+  <button class="nav-tab active" onclick="switchPage('ttt',this)">🎮 Tic-Tac-Toe</button>
+  <button class="nav-tab" onclick="switchPage('ab',this)">🌲 Alpha-Beta Simulator</button>
+</nav>
+
+<!-- Main -->
+<main class="main">
+
+<!-- ======= TIC-TAC-TOE PAGE ======= -->
+<div id="page-ttt" class="page active">
+  <div class="ttt-layout">
+
+    <!-- LEFT: GAME -->
+    <div>
+      <div class="game-header">
+        <div class="game-title"><span class="x">X</span> vs <span class="o">O</span></div>
+      </div>
+
+      <!-- MODE SELECT -->
+      <div class="mode-select">
+        <button class="mode-btn active" id="modeHuman" onclick="setMode('human')">👤 Human vs AI</button>
+        <button class="mode-btn" id="modeAI" onclick="setMode('ai')">🤖 AI vs AI</button>
+      </div>
+
+      <!-- DIFFICULTY -->
+      <div class="diff-row">
+        <button class="diff-btn easy active" id="diffEasy" onclick="setDiff('easy')">Easy</button>
+        <button class="diff-btn medium" id="diffMed" onclick="setDiff('medium')">Medium</button>
+        <button class="diff-btn hard" id="diffHard" onclick="setDiff('hard')">Hard</button>
+        <button class="diff-btn hard" id="diffUnbeat" onclick="setDiff('unbeatable')">Unbeatable</button>
+      </div>
+
+      <!-- STATUS -->
+      <div class="status-bar" id="statusBar">
+        <div class="status-dot" id="statusDot"></div>
+        <div>
+          <div class="status-text" id="statusText">Your turn — you are X</div>
+          <div class="status-sub" id="statusSub">Click any cell to place your mark</div>
+        </div>
+      </div>
+
+      <!-- BOARD -->
+      <div class="board-wrap">
+        <div class="board" id="board">
+          <div class="cell" id="c0" onclick="humanMove(0)"></div>
+          <div class="cell" id="c1" onclick="humanMove(1)"></div>
+          <div class="cell" id="c2" onclick="humanMove(2)"></div>
+          <div class="cell" id="c3" onclick="humanMove(3)"></div>
+          <div class="cell" id="c4" onclick="humanMove(4)"></div>
+          <div class="cell" id="c5" onclick="humanMove(5)"></div>
+          <div class="cell" id="c6" onclick="humanMove(6)"></div>
+          <div class="cell" id="c7" onclick="humanMove(7)"></div>
+          <div class="cell" id="c8" onclick="humanMove(8)"></div>
+        </div>
+        <div class="controls">
+          <button class="btn primary" onclick="resetGame()">New Game</button>
+          <button class="btn" onclick="undoMove()">⟵ Undo</button>
+          <button class="btn danger" onclick="resetScore()">Reset Score</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: AI PANEL -->
+    <div class="ai-panel">
+
+      <!-- Score -->
+      <div class="panel-card">
+        <div class="panel-label">Scoreboard</div>
+        <div class="score-grid">
+          <div class="score-item">
+            <div class="score-num x-score" id="scoreX">0</div>
+            <div class="score-lbl">X Wins</div>
+          </div>
+          <div class="score-item">
+            <div class="score-num draw" id="scoreDraw">0</div>
+            <div class="score-lbl">Draws</div>
+          </div>
+          <div class="score-item">
+            <div class="score-num o-score" id="scoreO">0</div>
+            <div class="score-lbl">O Wins</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Move Heatmap -->
+      <div class="panel-card">
+        <div class="panel-label">AI Score Heatmap</div>
+        <div class="heatmap-grid" id="heatmap">
+          <div class="heat-cell" id="h0"></div>
+          <div class="heat-cell" id="h1"></div>
+          <div class="heat-cell" id="h2"></div>
+          <div class="heat-cell" id="h3"></div>
+          <div class="heat-cell" id="h4"></div>
+          <div class="heat-cell" id="h5"></div>
+          <div class="heat-cell" id="h6"></div>
+          <div class="heat-cell" id="h7"></div>
+          <div class="heat-cell" id="h8"></div>
+        </div>
+      </div>
+
+      <!-- AI Thinking -->
+      <div class="panel-card" style="flex:1;">
+        <div class="panel-label">AI Thinking Log</div>
+        <div class="thinking-steps" id="thinkLog">
+          <div class="think-step">AI analysis will appear here...</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ======= ALPHA-BETA PAGE ======= -->
+<div id="page-ab" class="page">
+  <div class="ab-layout">
+
+    <div class="ab-controls">
+      <!-- INPUT PANEL -->
+      <div class="control-card">
+        <div class="control-title">Input</div>
+
+        <div class="preset-pills">
+          <button class="pill active" onclick="loadABPreset('simple',this)">Simple</button>
+          <button class="pill" onclick="loadABPreset('medium',this)">Medium</button>
+          <button class="pill" onclick="loadABPreset('complex',this)">Complex</button>
+          <button class="pill" onclick="loadABPreset('game',this)">Game AI</button>
+          <button class="pill" onclick="loadABPreset('ttt',this)">Tic-Tac-Toe</button>
+        </div>
+
+        <label class="inp-label">Leaf values (comma-separated)</label>
+        <input class="inp" type="text" id="abLeafInput" placeholder="3, 5, 6, 9, 1, 2, 8, 4" value="3, 5, 6, 9, 1, 2, 8, 4">
+
+        <label class="inp-label">Branching factor</label>
+        <input class="inp" type="number" id="abBranch" value="2" min="2" max="5">
+
+        <button class="btn primary" onclick="runAB()" style="width:100%;margin-top:4px;">
+          ▶ Run Alpha-Beta
+        </button>
+
+        <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
+          <label class="inp-label">Or paste JSON tree</label>
+          <textarea class="inp" id="abJsonInput" placeholder='{"name":"Root","type":"MAX","children":[...]}'></textarea>
+          <button class="btn" onclick="runABJson()" style="width:100%;">Run from JSON</button>
+        </div>
+      </div>
+
+      <!-- STATS -->
+      <div>
+        <div class="stats-row" id="abStats">
+          <div class="stat-box"><div class="stat-val" id="abOptVal">—</div><div class="stat-lbl">Optimal Value</div></div>
+          <div class="stat-box"><div class="stat-val" id="abEval" style="color:var(--green)">—</div><div class="stat-lbl">Nodes Evaluated</div></div>
+          <div class="stat-box"><div class="stat-val" id="abPruned" style="color:var(--accent2)">—</div><div class="stat-lbl">Nodes Pruned</div></div>
+          <div class="stat-box"><div class="stat-val" id="abEffic" style="color:var(--accent3)">—</div><div class="stat-lbl">Efficiency</div></div>
+          <div class="stat-box"><div class="stat-val" id="abTotal">—</div><div class="stat-lbl">Total Nodes</div></div>
+        </div>
+        <div style="background:rgba(255,61,113,0.08);border:1px solid rgba(255,61,113,0.2);border-radius:10px;padding:12px 16px;margin-bottom:16px;font-family:var(--mono);font-size:12px;display:none;" id="abError"></div>
+        <div class="legend">
+          <div class="leg"><div class="leg-dot max"></div>MAX node</div>
+          <div class="leg"><div class="leg-dot min"></div>MIN node</div>
+          <div class="leg"><div class="leg-dot path"></div>Optimal path</div>
+          <div class="leg"><div class="leg-dot pruned"></div>Pruned</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TREE VIZ -->
+    <div class="tree-section" id="abTreeSection">
+      <div class="tree-section-title">Tree Visualization <span style="font-family:var(--mono);font-size:11px;color:var(--muted);font-weight:400;">— scroll horizontally if needed</span></div>
+      <div style="overflow-x:auto;overflow-y:visible;min-height:120px;">
+      <div id="abTree" style="padding:10px 8px 20px;">
+        <div style="color:var(--muted);font-family:var(--mono);font-size:13px;padding:40px;text-align:center;">
+          Run the algorithm to see the tree visualization
+        </div>
+      </div>
+      </div>
+    </div>
+
+    <!-- STEPS -->
+    <div class="steps-section">
+      <div class="steps-header">
+        <div class="steps-title">Step-by-Step Execution</div>
+        <div class="step-controls">
+          <button class="step-btn" id="btnPrev" onclick="prevStep()" disabled>← Prev</button>
+          <span style="font-family:var(--mono);font-size:12px;color:var(--muted);padding:7px 10px;" id="stepCounter">0 / 0</span>
+          <button class="step-btn" id="btnNext" onclick="nextStep()" disabled>Next →</button>
+          <button class="step-btn" onclick="playAll()">▶ Play All</button>
+        </div>
+      </div>
+      <div class="steps-list" id="abSteps">
+        <div style="color:var(--muted);font-family:var(--mono);font-size:13px;padding:20px;text-align:center;">
+          Steps will appear here after running the algorithm
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</main>
+
+<script>
+// ================================================================
+//  TIC-TAC-TOE ENGINE — PERFECT MINIMAX WITH ALPHA-BETA PRUNING
+// ================================================================
+
+// Game state
+let board = Array(9).fill(null);
+let history = [];
+let gameOver = false;
+let gameMode = 'human'; // 'human' | 'ai'
+let difficulty = 'easy';
+let currentPlayer = 'X';
+let scores = {X:0, O:0, draw:0};
+let abNodes = 0;
+
+const WINS = [
+  [0,1,2],[3,4,5],[6,7,8],
+  [0,3,6],[1,4,7],[2,5,8],
+  [0,4,8],[2,4,6]
+];
+
+function checkWinner(b) {
+  for (const [a,c,d] of WINS) {
+    if (b[a] && b[a] === b[c] && b[a] === b[d]) return {winner: b[a], line: [a,c,d]};
+  }
+  if (b.every(v => v)) return {winner: 'draw', line: null};
+  return null;
+}
+
+function minimax(b, depth, alpha, beta, isMaximizing, steps) {
+  abNodes++;
+  const result = checkWinner(b);
+  if (result) {
+    if (result.winner === 'O') return 10 - depth;
+    if (result.winner === 'X') return depth - 10;
+    return 0;
+  }
+  if (depth > 8) return 0;
+
+  const empty = b.reduce((arr,v,i) => v ? arr : [...arr,i], []);
+
+  if (isMaximizing) {
+    let best = -Infinity;
+    for (const i of empty) {
+      b[i] = 'O';
+      const score = minimax(b, depth+1, alpha, beta, false, steps);
+      b[i] = null;
+      best = Math.max(best, score);
+      alpha = Math.max(alpha, best);
+      if (steps && depth <= 1) steps.push({type:'update',msg:`Pos ${i}: score=${score}, α=${alpha}`, pos:i, score});
+      if (beta <= alpha) {
+        if (steps && depth <= 1) steps.push({type:'prune',msg:`Pruned at pos ${i} (β=${beta} ≤ α=${alpha})`});
+        break;
+      }
+    }
+    return best;
+  } else {
+    let best = Infinity;
+    for (const i of empty) {
+      b[i] = 'X';
+      const score = minimax(b, depth+1, alpha, beta, true, steps);
+      b[i] = null;
+      best = Math.min(best, score);
+      beta = Math.min(beta, best);
+      if (steps && depth <= 1) steps.push({type:'update',msg:`Pos ${i}: score=${score}, β=${beta}`, pos:i, score});
+      if (beta <= alpha) {
+        if (steps && depth <= 1) steps.push({type:'prune',msg:`Pruned at pos ${i} (β=${beta} ≤ α=${alpha})`});
+        break;
+      }
+    }
+    return best;
+  }
+}
+
+function getBestMove(b) {
+  const steps = [];
+  abNodes = 0;
+  const scores = [];
+  const empty = b.reduce((arr,v,i) => v ? arr : [...arr,i], []);
+
+  steps.push({type:'visit',msg:`Analyzing ${empty.length} possible moves...`});
+
+  let bestScore = -Infinity;
+  let bestMove = empty[0];
+
+  for (const i of empty) {
+    b[i] = 'O';
+    const s = minimax(b, 0, -Infinity, Infinity, false, null);
+    b[i] = null;
+    scores[i] = s;
+    steps.push({type: s > bestScore ? 'best' : 'update', msg:`Move ${i}: score = ${s}${s > bestScore ? ' ★ NEW BEST' : ''}`, pos:i, score:s});
+    if (s > bestScore) { bestScore = s; bestMove = i; }
+  }
+
+  steps.push({type:'best',msg:`Best move: position ${bestMove} (score: ${bestScore}). Nodes evaluated: ${abNodes}`});
+  return {move: bestMove, scores, steps};
+}
+
+function getEasyMove(b) {
+  const empty = b.reduce((arr,v,i) => v ? arr : [...arr,i],[]);
+  // 30% chance to play optimal
+  if (Math.random() < 0.3) {
+    return {move: getBestMove(b).move, scores: {}, steps: [{type:'visit',msg:'Easy mode: playing randomly'}]};
+  }
+  return {move: empty[Math.floor(Math.random()*empty.length)], scores:{}, steps:[{type:'visit',msg:'Easy mode: random move'}]};
+}
+
+function getMediumMove(b) {
+  const empty = b.reduce((arr,v,i) => v ? arr : [...arr,i],[]);
+  // Check if AI can win
+  for (const i of empty) {
+    b[i]='O'; const r=checkWinner(b); b[i]=null;
+    if (r && r.winner==='O') return {move:i,scores:{},steps:[{type:'best',msg:`Winning move at position ${i}`}]};
+  }
+  // Block human win
+  for (const i of empty) {
+    b[i]='X'; const r=checkWinner(b); b[i]=null;
+    if (r && r.winner==='X') return {move:i,scores:{},steps:[{type:'visit',msg:`Blocking human win at position ${i}`}]};
+  }
+  // Random
+  return {move:empty[Math.floor(Math.random()*empty.length)],scores:{},steps:[{type:'visit',msg:'No immediate win/block, playing randomly'}]};
+}
+
+function getAIMove(b) {
+  if (difficulty === 'easy') return getEasyMove(b);
+  if (difficulty === 'medium') return getMediumMove(b);
+  return getBestMove(b); // hard & unbeatable
+}
+
+// ============ RENDERING ============
+
+function renderBoard() {
+  for (let i = 0; i < 9; i++) {
+    const cell = document.getElementById('c'+i);
+    const val = board[i];
+    cell.className = 'cell' + (val ? ' taken' : '');
+    cell.innerHTML = val ? `<span class="${val.toLowerCase()}-mark">${val}</span>` : '';
+  }
+}
+
+function highlightWinLine(line) {
+  if (!line) return;
+  line.forEach(i => document.getElementById('c'+i).classList.add('winning'));
+}
+
+function updateHeatmap(scores) {
+  const vals = Object.values(scores).filter(v => v !== undefined);
+  const min = vals.length ? Math.min(...vals) : -10;
+  const max = vals.length ? Math.max(...vals) : 10;
+  const range = max - min || 1;
+
+  for (let i = 0; i < 9; i++) {
+    const h = document.getElementById('h'+i);
+    if (board[i]) {
+      h.style.background = 'rgba(255,255,255,0.03)';
+      h.style.border = '1px solid rgba(255,255,255,0.05)';
+      h.textContent = board[i];
+      h.style.color = board[i]==='X' ? 'var(--accent)' : 'var(--accent2)';
+      h.style.fontSize = '18px';
+      continue;
+    }
+    if (scores[i] === undefined) {
+      h.style.background = '';
+      h.textContent = '';
+      continue;
+    }
+    const s = scores[i];
+    const t = (s - min) / range;
+    const r = Math.round(255*61/255*(1-t) + 0*(t));
+    const g = Math.round(255*136/255*(t));
+    const b2 = Math.round(255*(1-t)*113/255);
+    h.style.background = `rgba(${s>0?0:255},${s>0?229:61},${s>0?100:113},${0.15+Math.abs(t)*0.4})`;
+    h.style.border = `1px solid rgba(${s>0?0:255},${s>0?229:61},${s>0?100:113},0.3)`;
+    h.textContent = s > 0 ? '+'+s : s;
+    h.style.color = s > 0 ? 'var(--green)' : s < 0 ? 'var(--accent2)' : 'var(--muted)';
+    h.style.fontSize = '12px';
+  }
+}
+
+function updateThinkLog(steps) {
+  const log = document.getElementById('thinkLog');
+  if (!steps || !steps.length) return;
+  log.innerHTML = steps.slice(-12).map(s =>
+    `<div class="think-step ${s.type}">${s.msg}</div>`
+  ).join('');
+  log.scrollTop = log.scrollHeight;
+}
+
+function setStatus(text, sub, type='normal') {
+  const dot = document.getElementById('statusDot');
+  const t = document.getElementById('statusText');
+  const s = document.getElementById('statusSub');
+  dot.className = 'status-dot' + (type==='red'?' red':type==='gold'?' gold':type==='green'?' green':'');
+  t.textContent = text;
+  s.textContent = sub || '';
+}
+
+function updateScoreUI() {
+  document.getElementById('scoreX').textContent = scores.X;
+  document.getElementById('scoreDraw').textContent = scores.draw;
+  document.getElementById('scoreO').textContent = scores.O;
+}
+
+// ============ GAME LOGIC ============
+
+function humanMove(idx) {
+  if (gameOver || board[idx] || currentPlayer !== 'X' || gameMode === 'ai') return;
+  makeMove(idx, 'X');
+  if (!gameOver && gameMode === 'human') {
+    setTimeout(doAIMove, 400);
+  }
+}
+
+function makeMove(idx, player) {
+  history.push([...board]);
+  board[idx] = player;
+  renderBoard();
+
+  const result = checkWinner(board);
+  if (result) {
+    gameOver = true;
+    if (result.winner === 'draw') {
+      scores.draw++;
+      setStatus('Draw! 🤝', 'Well played by both sides', 'gold');
+      updateThinkLog([{type:'visit',msg:'Draw — no winner. Perfect play required from both sides!'}]);
+    } else {
+      scores[result.winner]++;
+      const isHuman = result.winner === 'X' && gameMode === 'human';
+      setStatus(
+        `${result.winner} wins! ${result.winner==='X'?'🎉':'🤖'}`,
+        isHuman ? "You beat the AI!" : result.winner==='O' ? "AI wins! Tough luck." : 'AI vs AI result',
+        result.winner === 'X' ? 'green' : 'red'
+      );
+      setTimeout(() => highlightWinLine(result.line), 100);
+    }
+    updateScoreUI();
+    updateHeatmap({});
+    return;
+  }
+
+  currentPlayer = player === 'X' ? 'O' : 'X';
+}
+
+function doAIMove() {
+  if (gameOver || currentPlayer !== 'O') return;
+  setStatus('AI is thinking...', 'Computing optimal move', 'normal');
+
+  setTimeout(() => {
+    const {move, scores: mvScores, steps} = getAIMove([...board]);
+    updateHeatmap(mvScores);
+    updateThinkLog(steps);
+    makeMove(move, 'O');
+
+    if (!gameOver) {
+      if (gameMode === 'ai') {
+        setStatus("X's turn (AI)", "AI vs AI simulation", 'normal');
+        setTimeout(doAIvsAI_X, 600);
+      } else {
+        setStatus("Your turn — you are X", "Click any cell to play", 'normal');
+      }
+    }
+  }, difficulty === 'unbeatable' ? 300 : 100);
+}
+
+function doAIvsAI_X() {
+  if (gameOver || currentPlayer !== 'X') return;
+  // For AI vs AI, X uses minimax too (but as minimizer)
+  const empty = board.reduce((arr,v,i) => v ? arr : [...arr,i],[]);
+  if (!empty.length) return;
+
+  let bestScore = Infinity, bestMove = empty[0];
+  const mvScores = {};
+  for (const i of empty) {
+    board[i]='X';
+    const s = minimax([...board], 0, -Infinity, Infinity, true, null);
+    board[i]=null;
+    mvScores[i] = -s;
+    if (s < bestScore) { bestScore=s; bestMove=i; }
+  }
+  updateHeatmap(mvScores);
+  updateThinkLog([{type:'visit',msg:`X (AI) choosing position ${bestMove}`},{type:'best',msg:`Score: ${bestScore}`}]);
+  makeMove(bestMove,'X');
+  if (!gameOver) {
+    setStatus("O's turn (AI)", "AI vs AI simulation",'normal');
+    setTimeout(doAIMove, 700);
+  }
+}
+
+function resetGame() {
+  board = Array(9).fill(null);
+  history = [];
+  gameOver = false;
+  currentPlayer = 'X';
+  renderBoard();
+  updateHeatmap({});
+  updateThinkLog([{type:'visit',msg:'New game started. Waiting for first move...'}]);
+
+  if (gameMode === 'human') {
+    setStatus("Your turn — you are X", "Click any cell to play",'normal');
+  } else {
+    setStatus("AI vs AI — Watch the battle!", "AI will play both sides",'normal');
+    setTimeout(doAIvsAI_X, 800);
+  }
+}
+
+function undoMove() {
+  if (history.length === 0) return;
+  // Undo two moves (AI + human) unless AI vs AI
+  const steps = gameMode === 'human' && history.length >= 2 ? 2 : 1;
+  for (let i = 0; i < steps && history.length; i++) {
+    board = history.pop();
+    currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+  }
+  currentPlayer = 'X'; // always human's turn after undo
+  gameOver = false;
+  renderBoard();
+  updateHeatmap({});
+  setStatus("Your turn — you are X", "Undo successful — your move",'normal');
+  updateThinkLog([{type:'visit',msg:'Move undone. Your turn!'}]);
+}
+
+function resetScore() {
+  scores = {X:0, O:0, draw:0};
+  updateScoreUI();
+}
+
+function setMode(m) {
+  gameMode = m;
+  document.getElementById('modeHuman').classList.toggle('active', m==='human');
+  document.getElementById('modeAI').classList.toggle('active', m==='ai');
+  resetGame();
+}
+
+function setDiff(d) {
+  difficulty = d;
+  ['Easy','Med','Hard','Unbeat'].forEach(x => {
+    const el = document.getElementById('diff'+x);
+    if (el) { el.className = 'diff-btn ' + x.toLowerCase(); }
+  });
+  // Map button ids
+  const map = {easy:'Easy',medium:'Med',hard:'Hard',unbeatable:'Unbeat'};
+  const btn = document.getElementById('diff'+map[d]);
+  if (btn) btn.classList.add('active');
+  resetGame();
+}
+
+// Init
+renderBoard();
+updateScoreUI();
+
+// ================================================================
+//  ALPHA-BETA PRUNING SIMULATOR
+// ================================================================
+
+let abTree = null;
+let abStepsList = [];
+let abStepIdx = 0;
+let abBestPath = [];
+let abPlayTimer = null;
+
+const abPresets = {
+  simple: [3, 5, 6, 9, 1, 2],
+  medium: [3, 12, 8, 2, 14, 5, 2],
+  complex: [5, 6, 7, 4, 5, 3, 6, 6, 9],
+  game: [10, 15, 12, 8, 20, 5, 7, 18],
+  ttt: [10, -10, 0, 5, -5, 0, 8, -8]
+};
+
+function loadABPreset(name, btn) {
+  document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  const vals = abPresets[name];
+  document.getElementById('abLeafInput').value = vals.join(', ');
+  document.getElementById('abBranch').value = 2;
+}
+
+function showABError(msg) {
+  const el = document.getElementById('abError');
+  el.style.display = 'block';
+  el.textContent = '⚠ ' + msg;
+  setTimeout(() => el.style.display = 'none', 4000);
+}
+
+function runAB() {
+  const input = document.getElementById('abLeafInput').value;
+  const branch = parseInt(document.getElementById('abBranch').value) || 2;
+  try {
+    const vals = input.split(',').map(v => {
+      const n = parseFloat(v.trim());
+      if (isNaN(n)) throw new Error('Invalid number: ' + v);
+      return n;
+    });
+    if (vals.length < 2) throw new Error('Need at least 2 values');
+    const tree = buildTreeFromLeaves(vals, branch);
+    runAlphaBeta(tree);
+  } catch(e) { showABError(e.message); }
+}
+
+function runABJson() {
+  try {
+    const json = document.getElementById('abJsonInput').value.trim();
+    if (!json) throw new Error('JSON is empty');
+    const tree = JSON.parse(json);
+    runAlphaBeta(tree);
+  } catch(e) { showABError('Invalid JSON: ' + e.message); }
+}
+
+function buildTreeFromLeaves(vals, branch) {
+  function build(start, count, depth) {
+    if (count === 1) return {name:`L${start}`, type:'LEAF', value:vals[start]};
+    const childCount = Math.ceil(count / branch);
+    const children = [];
+    for (let i = 0; i < branch; i++) {
+      const s = start + i*childCount;
+      if (s >= start+count) break;
+      const sz = Math.min(childCount, start+count-s);
+      children.push(build(s, sz, depth+1));
+    }
+    const isMax = depth%2===0;
+    return {name: depth===0?'Root':`N${start}`, type: isMax?'MAX':'MIN', children};
+  }
+  return build(0, vals.length, 0);
+}
+
+function runAlphaBeta(tree) {
+  abTree = JSON.parse(JSON.stringify(tree));
+  abStepsList = [];
+  abBestPath = [];
+
+  function ab(node, alpha, beta, depth) {
+    abStepsList.push({type:'visit', text:`Visit ${node.name} [${node.type}]  α=${fmt(alpha)}  β=${fmt(beta)}`, depth});
+
+    if (node.type==='LEAF' || (node.value!==undefined && !node.children)) {
+      node.finalValue = node.value;
+      node.visited = true;
+      abStepsList.push({type:'leaf', text:`↳ Leaf ${node.name} = ${node.value}`, depth});
+      return node.value;
+    }
+
+    let bestChild = null;
+    if (node.type==='MAX') {
+      let best = -Infinity;
+      for (let i=0; i<node.children.length; i++) {
+        const child = node.children[i];
+        const val = ab(child, alpha, beta, depth+1);
+        if (val > best) { best=val; bestChild=child; }
+        alpha = Math.max(alpha, best);
+        abStepsList.push({type:'update', text:`${node.name}: child ${child.name}=${val}  → α=${fmt(alpha)}  β=${fmt(beta)}`, depth});
+        if (beta <= alpha) {
+          abStepsList.push({type:'prune', text:`✂ PRUNE at ${node.name}! β(${fmt(beta)}) ≤ α(${fmt(alpha)}) — skip remaining children`, depth});
+          for (let j=i+1; j<node.children.length; j++) markPruned(node.children[j]);
+          break;
+        }
+      }
+      node.finalValue = best;
+    } else {
+      let best = Infinity;
+      for (let i=0; i<node.children.length; i++) {
+        const child = node.children[i];
+        const val = ab(child, alpha, beta, depth+1);
+        if (val < best) { best=val; bestChild=child; }
+        beta = Math.min(beta, best);
+        abStepsList.push({type:'update', text:`${node.name}: child ${child.name}=${val}  → α=${fmt(alpha)}  β=${fmt(beta)}`, depth});
+        if (beta <= alpha) {
+          abStepsList.push({type:'prune', text:`✂ PRUNE at ${node.name}! β(${fmt(beta)}) ≤ α(${fmt(alpha)}) — skip remaining children`, depth});
+          for (let j=i+1; j<node.children.length; j++) markPruned(node.children[j]);
+          break;
+        }
+      }
+      node.finalValue = best;
+    }
+    node.visited = true;
+    node.bestChild = bestChild ? bestChild.name : null;
+    return node.finalValue;
+  }
+
+  function markPruned(n) {
+    n.pruned = true;
+    if (n.children) n.children.forEach(markPruned);
+  }
+
+  const result = ab(abTree, -Infinity, Infinity, 0);
+
+  // Trace best path
+  function tracePath(node) {
+    abBestPath.push(node.name);
+    if (node.bestChild && node.children) {
+      const bc = node.children.find(c => c.name===node.bestChild);
+      if (bc) tracePath(bc);
+    }
+  }
+  tracePath(abTree);
+
+  // Stats
+  let evaluated=0, pruned=0, total=0;
+  function countNodes(n) {
+    total++;
+    if (n.visited) evaluated++;
+    if (n.pruned) pruned++;
+    if (n.children) n.children.forEach(countNodes);
+  }
+  countNodes(abTree);
+
+  document.getElementById('abOptVal').textContent = result;
+  document.getElementById('abEval').textContent = evaluated;
+  document.getElementById('abPruned').textContent = pruned;
+  document.getElementById('abEffic').textContent = total ? (pruned/total*100).toFixed(0)+'%' : '0%';
+  document.getElementById('abTotal').textContent = total;
+
+  renderABTree();
+  renderABSteps();
+}
+
+function fmt(v) {
+  if (v === Infinity || v === -Infinity) return v>0?'+∞':'-∞';
+  return v;
+}
+
+function renderABTree() {
+  const container = document.getElementById('abTree');
+
+  // ── Layout constants ──────────────────────────────────────────
+  const NODE_W   = 90;
+  const NODE_H   = 72;
+  const H_GAP    = 28;   // horizontal gap between sibling nodes
+  const V_GAP    = 70;   // vertical gap between levels
+
+  // ── Assign x positions via post-order (Reingold-Tilford lite) ─
+  let xCounter = 0;
+  function assignX(node) {
+    if (!node.children || node.children.length === 0) {
+      node._x = xCounter;
+      xCounter += NODE_W + H_GAP;
+    } else {
+      node.children.forEach(assignX);
+      const first = node.children[0]._x;
+      const last  = node.children[node.children.length - 1]._x;
+      node._x = (first + last) / 2;
+    }
+  }
+
+  // ── Assign y positions by depth ───────────────────────────────
+  function assignY(node, depth) {
+    node._y = depth * (NODE_H + V_GAP);
+    if (node.children) node.children.forEach(c => assignY(c, depth + 1));
+  }
+
+  assignX(abTree);
+  assignY(abTree, 0);
+
+  // ── Compute canvas size ───────────────────────────────────────
+  let maxX = 0, maxY = 0;
+  function measureTree(node) {
+    maxX = Math.max(maxX, node._x + NODE_W);
+    maxY = Math.max(maxY, node._y + NODE_H);
+    if (node.children) node.children.forEach(measureTree);
+  }
+  measureTree(abTree);
+
+  const PAD   = 20;
+  const W     = maxX + PAD * 2;
+  const H     = maxY + PAD * 2;
+
+  // ── Collect all edges ─────────────────────────────────────────
+  const edges = [];
+  function collectEdges(node) {
+    if (node.children) {
+      node.children.forEach(child => {
+        edges.push({ parent: node, child });
+        collectEdges(child);
+      });
+    }
+  }
+  collectEdges(abTree);
+
+  // ── Build SVG lines ───────────────────────────────────────────
+  function edgeSVG(parent, child) {
+    const px = PAD + parent._x + NODE_W / 2;
+    const py = PAD + parent._y + NODE_H;
+    const cx = PAD + child._x  + NODE_W / 2;
+    const cy = PAD + child._y;
+    const onPath = abBestPath.includes(parent.name) && abBestPath.includes(child.name);
+    const isPruned = child.pruned;
+    const color  = isPruned ? 'rgba(255,61,113,0.2)' : onPath ? '#ffd60a' : 'rgba(255,255,255,0.15)';
+    const width  = onPath ? 3 : 1.5;
+    const dash   = isPruned ? '5,4' : '';
+    const mid_y  = (py + cy) / 2;
+    return `<path d="M${px},${py} C${px},${mid_y} ${cx},${mid_y} ${cx},${cy}"
+      fill="none" stroke="${color}" stroke-width="${width}" ${dash ? `stroke-dasharray="${dash}"` : ''} stroke-linecap="round"/>`;
+  }
+
+  const svgLines = edges.map(e => edgeSVG(e.parent, e.child)).join('');
+
+  // ── Build HTML nodes ──────────────────────────────────────────
+  function nodeType(node) {
+    if (node.pruned) return 'pruned';
+    if (abBestPath.includes(node.name)) return 'on-path';
+    return (node.type || 'leaf').toLowerCase();
+  }
+
+  const nodeColors = {
+    max:     { border: '#00e5ff', bg: 'rgba(0,229,255,0.10)',   text: '#00e5ff'  },
+    min:     { border: '#ff3d71', bg: 'rgba(255,61,113,0.10)',  text: '#ff3d71'  },
+    leaf:    { border: '#5a6a7a', bg: 'rgba(255,255,255,0.04)', text: '#e2e8f0'  },
+    'on-path': { border: '#ffd60a', bg: 'rgba(255,214,10,0.13)', text: '#ffd60a' },
+    pruned:  { border: '#5a6a7a', bg: 'rgba(0,0,0,0.1)',        text: '#3a4a5a'  }
+  };
+
+  function nodeIconLabel(type) {
+    if (type === 'MAX') return '▲ MAX';
+    if (type === 'MIN') return '▼ MIN';
+    return '◆ LEAF';
+  }
+
+  let nodesHTML = '';
+  function buildNodes(node) {
+    const t   = nodeType(node);
+    const clr = nodeColors[t] || nodeColors.leaf;
+    const val = node.finalValue !== undefined ? node.finalValue
+              : node.value      !== undefined ? node.value : '?';
+    const left = PAD + node._x;
+    const top  = PAD + node._y;
+    const pulse = t === 'on-path' ? 'animation:goldPulse 2s infinite;' : '';
+    const pruneStyle = node.pruned ? 'border-style:dashed;opacity:0.35;' : '';
+
+    nodesHTML += `
+      <div style="
+        position:absolute;
+        left:${left}px; top:${top}px;
+        width:${NODE_W}px; height:${NODE_H}px;
+        border:2px solid ${clr.border};
+        border-radius:12px;
+        background:${clr.bg};
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        ${pruneStyle}${pulse}
+        box-shadow: ${t==='on-path' ? '0 0 18px rgba(255,214,10,0.35)' : t==='max' ? '0 0 10px rgba(0,229,255,0.12)' : t==='min' ? '0 0 10px rgba(255,61,113,0.12)' : 'none'};
+        cursor:default; user-select:none;
+      ">
+        <div style="font-family:var(--mono);font-size:9px;color:${clr.border};opacity:0.75;letter-spacing:1px;margin-bottom:2px;">${node.name}</div>
+        <div style="font-family:var(--mono);font-size:20px;font-weight:800;color:${clr.text};line-height:1;">${val}</div>
+        <div style="font-family:var(--mono);font-size:8px;color:${clr.border};opacity:0.6;margin-top:2px;">${nodeIconLabel(node.type)}</div>
+      </div>`;
+    if (node.children) node.children.forEach(buildNodes);
+  }
+  buildNodes(abTree);
+
+  // ── Assemble ──────────────────────────────────────────────────
+  container.innerHTML = `
+    <div style="position:relative;width:${W}px;height:${H}px;margin:0 auto;">
+      <svg style="position:absolute;top:0;left:0;width:100%;height:100%;overflow:visible;pointer-events:none;">
+        ${svgLines}
+      </svg>
+      ${nodesHTML}
+    </div>`;
+}
+
+function renderABSteps() {
+  abStepIdx = 0;
+  const container = document.getElementById('abSteps');
+  container.innerHTML = abStepsList.map((s, i) =>
+    `<div class="ab-step ${s.type}" id="abstep${i}">${(i+1)}. ${'&nbsp;'.repeat(s.depth*2)}${s.text}</div>`
+  ).join('');
+  updateStepControls();
+  // Scroll to top
+  container.scrollTop = 0;
+}
+
+function updateStepControls() {
+  const total = abStepsList.length;
+  document.getElementById('stepCounter').textContent = `${abStepIdx} / ${total}`;
+  document.getElementById('btnPrev').disabled = abStepIdx <= 0;
+  document.getElementById('btnNext').disabled = abStepIdx >= total;
+}
+
+function prevStep() {
+  if (abStepIdx <= 0) return;
+  const el = document.getElementById('abstep'+(abStepIdx-1));
+  if (el) el.classList.remove('active-step');
+  abStepIdx--;
+  updateStepControls();
+  scrollToStep(abStepIdx-1);
+}
+
+function nextStep() {
+  const el = document.getElementById('abstep'+abStepIdx);
+  if (el) el.classList.add('active-step');
+  if (abStepIdx > 0) {
+    const prev = document.getElementById('abstep'+(abStepIdx-1));
+    if (prev) prev.classList.remove('active-step');
+  }
+  abStepIdx++;
+  updateStepControls();
+  scrollToStep(abStepIdx-1);
+}
+
+function scrollToStep(idx) {
+  const el = document.getElementById('abstep'+idx);
+  if (el) el.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function playAll() {
+  if (abPlayTimer) { clearInterval(abPlayTimer); abPlayTimer=null; return; }
+  abStepIdx = 0;
+  document.querySelectorAll('.ab-step').forEach(el => el.classList.remove('active-step'));
+  abPlayTimer = setInterval(() => {
+    if (abStepIdx >= abStepsList.length) {
+      clearInterval(abPlayTimer); abPlayTimer=null; return;
+    }
+    nextStep();
+  }, 200);
+}
+
+// PAGE SWITCHING
+function switchPage(name, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  btn.classList.add('active');
+}
+
+// Load default AB preset
+document.querySelector('.pill.active') && null; // already loaded via HTML
+</script>
+</body>
+</html>
